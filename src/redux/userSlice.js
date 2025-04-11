@@ -7,7 +7,7 @@ const initialState = {
   JwtToken: "",
   term: "",
   id: 0,
-  isInstructor: true,
+  isInstructor: false,
   isLoading: false,
   isFailed: false,
   isLoggedIn: false,

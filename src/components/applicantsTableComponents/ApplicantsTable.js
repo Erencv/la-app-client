@@ -120,18 +120,21 @@ function CustomRow(props) {
     console.log(prevCourseGrades);
     console.log(transcript);
 
-    prevCourseGrades.map((req) => {
-      const course = transcript.course.find((course) => course.courseCode === req.course.courseCode);
-
-      setRequiredCourses((prev) => [
-        ...prev,
-        {
-          courseCode: req.course.courseCode,
-          grade: course.grade
-
-        }
-      ]);
-    });
+    if (prevCourseGrades && transcript?.course) {
+      try {
+        const requiredCoursesData = prevCourseGrades.map((req) => {
+          const course = transcript.course.find((course) => course.courseCode === req.course.courseCode);
+          return {
+            courseCode: req.course.courseCode,
+            grade: course?.grade || 'N/A'
+          };
+        });
+        setRequiredCourses(requiredCoursesData);
+      } catch (error) {
+        console.error("Error processing course grades:", error);
+        setRequiredCourses([]);
+      }
+    }
 
   }, []);
 

@@ -274,18 +274,18 @@ export default function AnnouncementRow({ key, data, tabValue, userName, navigat
   }
 
   const addFollower = (applicationId) => {
-    addFollowerToApplication(applicationId).then((res) => {
-      setFollowingCallback(applicationId, res.isFollowing)
+    //addFollowerToApplication(applicationId).then((res) => {
+      //setFollowingCallback(applicationId, res.isFollowing)
 
-    }).catch((_) => (null))
+    //}).catch((_) => (null))
 
 
   }
 
   const removeFollower = (applicationId) => {
-    removeFollowerFromApplication(applicationId).then((res) => {
-      setFollowingCallback(applicationId, res.isFollowing)
-    }).catch((_) => (null))
+    // removeFollowerFromApplication(applicationId).then((res) => {
+    //   setFollowingCallback(applicationId, res.isFollowing)
+    // }).catch((_) => (null))
 
   }
 

@@ -2,10 +2,16 @@ import axios from "axios";
 import handleError from "./errors/GlobalErrorHandler.jsx"
 
 const url = window.location.href;
-var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8080/api/v1";
+//var apiEndpoint = "http://localhost:8000/api/v1";
+var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8000/api/v1";
+
 if (url.indexOf("pro2") === -1) {
-  apiEndpoint = "http://localhost:8080/api/v1";
+  apiEndpoint = "http://localhost:8000/api/v1";
+  //apiEndpoint = "https://localhost:8000/api/v1";
 }
+
+// Debug user ID - change this value to control X-User-ID header
+const DEBUG_USER_ID = "1";
 
 function getJwtFromCookie() {
   const cookies = document.cookie.split(';');
@@ -21,7 +27,6 @@ function getJwtFromCookie() {
   return null;
 }
 
-
 async function applyToPost(postId, userID, answers) {
   try {
     const token = getJwtFromCookie()
@@ -31,7 +36,8 @@ async function applyToPost(postId, userID, answers) {
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
         }
       }
     );
@@ -43,16 +49,17 @@ async function applyToPost(postId, userID, answers) {
     catch (e) {
       return false
     }
-
   }
-
 }
 
 async function getAnnouncement(id) {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(`${apiEndpoint}/applications/${id}`, {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
 
     return results.data;
@@ -65,7 +72,10 @@ async function getAllAnnouncements() {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(apiEndpoint + "/applications", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return results.data;
   } catch (error) {
@@ -77,7 +87,10 @@ async function getAllInstructors() {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(apiEndpoint + "/users/instructors", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return results.data;
   } catch (error) {
@@ -89,7 +102,10 @@ async function getAllAnnouncementsOfInstructor() {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(apiEndpoint + "/applications/instructor", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return results.data;
   } catch (error) {
@@ -101,32 +117,37 @@ async function getTranscriptInfo() {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(apiEndpoint + "/transcript/current-transcript-status", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return results.data;
   } catch (error) {
     return handleError(error);
   }
 }
-
-
-
 
 async function getAllCourses() {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(apiEndpoint + "/courses", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return results.data;
   } catch (error) {
     return handleError(error);
   }
 }
+
 function formatDate(dateString) {
   const [year, month, day] = dateString.split('-');
   return `${day}/${month}/${year}`;
 }
+
 async function addAnnouncement(
   course_code,
   username,
@@ -143,11 +164,8 @@ async function addAnnouncement(
   isNotTakenAllowed,
   section
 ) {
-
   const token = getJwtFromCookie()
   const deadline = formatDate(lastApplicationDate) + " " + lastApplicationTime;
-
-
 
   console.log(letterGrade);
   const authInstructor_ids = auth_instructors.map(
@@ -156,12 +174,10 @@ async function addAnnouncement(
 
   try {
     const response = await axios.post(apiEndpoint + "/applications", {
-
       courseCode: course_code,
       previousCourseGrades: desired_courses,
       lastApplicationDate: deadline,
       term: term.term_desc,
-      //title: title,
       weeklyWorkHours: workHours,
       jobDetails: details,
       authorizedInstructors: authInstructor_ids,
@@ -172,15 +188,15 @@ async function addAnnouncement(
       isNotTakenAllowed: isNotTakenAllowed,
       section: section?.trim()
     }, {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
 
     return response.data;
-    // Handle the successful response here
   } catch (error) {
-
     return handleError(error);
-
   }
 }
 
@@ -202,11 +218,6 @@ async function updateAnnouncement(
   section
 ) {
   const token = getJwtFromCookie();
-  const faculty = "FENS";
-  // const term = "Fall 2022";
-  const title = "title update test";
-  console.log('isInprogressAllowed :>> ', isInprogressAllowed);
-  console.log('isNotTakenAllowed :>> ', isNotTakenAllowed);
   const deadline = formatDate(lastApplicationDate) + " " + lastApplicationTime;
   console.log(letterGrade);
   const authInstructor_ids = auth_instructors.map(
@@ -214,13 +225,10 @@ async function updateAnnouncement(
   );
   try {
     const response = await axios.put(apiEndpoint + "/applications/" + id, {
-      //instructor_username: username,
-      //faculty: faculty,
       courseCode: course_code,
       previousCourseGrades: desired_courses,
       lastApplicationDate: deadline,
       term: term.term_desc,
-      //title: title,
       weeklyWorkHours: workHours,
       jobDetails: details,
       authorizedInstructors: authInstructor_ids,
@@ -231,33 +239,39 @@ async function updateAnnouncement(
       isNotTakenAllowed: isNotTakenAllowed,
       section: section?.trim()
     }, {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return response.data;
   } catch (error) {
     return handleError(error)
   }
-
 }
 
 async function getApplicationsByPost(postID) {
   try {
     const results = await axios.get(
-      apiEndpoint + "/listPostApplication/" + postID
+      apiEndpoint + "/listPostApplication/" + postID,
+      {
+        headers: { "X-User-ID": DEBUG_USER_ID }
+      }
     );
     return results.data;
   } catch (error) { return handleError(error); }
-
 }
 
 async function getApplicationByUsername(username) {
   try {
     const results = await axios.get(
-      apiEndpoint + "/listStudentApplication/" + username
+      apiEndpoint + "/listStudentApplication/" + username,
+      {
+        headers: { "X-User-ID": DEBUG_USER_ID }
+      }
     );
     return results.data;
   } catch (error) { return handleError(error); }
-
 }
 
 async function getApplicationRequestsByStudentId(studentId, page) {
@@ -266,12 +280,14 @@ async function getApplicationRequestsByStudentId(studentId, page) {
     
     const results = await axios.get(
       apiEndpoint + "/applicationRequest/student/" + studentId + "?page="+ page +"&size=5", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     }
     );
     return results.data;
   } catch (error) { return handleError(error); }
-
 }
 
 async function getStudentLaHistory(studentId,applicationId, page) {
@@ -283,26 +299,29 @@ async function getStudentLaHistory(studentId,applicationId, page) {
         studentId: studentId,
         applicationId : parseInt(applicationId)
       },{
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     }
     );
     return results.data;
   } catch (error) { return handleError(error); }
-
 }
-
 
 async function getApplicationRequestsByApplicationId(applicationId) {
   try {
     const token = getJwtFromCookie()
     const results = await axios.get(
       apiEndpoint + "/applications/" + applicationId + "/applicationRequests", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     }
     );
     return results.data;
   } catch (error) { return handleError(error); }
-
 }
 
 async function updateApplicationById(
@@ -333,13 +352,13 @@ async function updateApplicationById(
       bodyFormData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "Authorization": "Bearer " + token
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
         }
     }
     );
     return results.data;
   } catch (error) { return handleError(error); }
-
 }
 
 async function deleteApplicationById(applicationId) {
@@ -347,19 +366,47 @@ async function deleteApplicationById(applicationId) {
     const token = getJwtFromCookie()
     const results = await axios.delete(
       apiEndpoint + "/applications/" + applicationId, {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     }
     );
     return
   } catch (error) { return handleError(error); }
-
 }
 
 async function validateLogin(serviceUrl, ticket) {
   try {
-    // Check if serviceUrl is a valid URL
+    // DEBUG MODE: Bypass authentication for testing
+    const debugMode = true; // Set to true to bypass authentication
+    
+    if (debugMode) {
+      console.log("DEBUG MODE: Bypassing authentication");
+      // Create a mock JWT token with 1 day expiry
+      const mockToken = "debug_token_for_testing_only";
+      const expiryDays = 1;
+      const now = new Date();
+      now.setTime(now.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + now.toUTCString();
+      document.cookie = "jwt=" + mockToken + ";" + expires + ";path=/";
+      
+      // Return mock data - Change role here to switch between "STUDENT" and "INSTRUCTOR"
+      return {
+        token: mockToken,
+        user: {
+          id: DEBUG_USER_ID, // Use the same ID as X-User-ID header
+          username: "eren",
+          email: "debug@example.com",
+          role: "STUDENT", // Change to "INSTRUCTOR" for instructor role
+          name: "Debug User",
+          surname: "Test"
+        }
+      };
+    }
+    
+    // Normal authentication flow
     const isValidUrl = isValidURL(serviceUrl);
-
     if (!isValidUrl) {
       throw new Error("The service URL is not valid.");
     }
@@ -367,13 +414,15 @@ async function validateLogin(serviceUrl, ticket) {
     const result = await axios.post(apiEndpoint + "/auth/authentication", {
       serviceUrl: serviceUrl,
       ticket: ticket,
+    }, {
+      headers: { "X-User-ID": DEBUG_USER_ID }
     });
 
     console.log(result.data);
     
     const expiryDays = 1;
     const now = new Date();
-    now.setTime(now.getTime() + (expiryDays * 24 * 60 * 60 * 1000)); // 1 day
+    now.setTime(now.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
     const expires = "expires=" + now.toUTCString();
     document.cookie = "jwt=" + result.data.token + ";" + expires + ";path=/";
 
@@ -393,35 +442,332 @@ function isValidURL(url) {
   }
 }
 
-
 async function getTranscript(applicationId) {
   try {
-    const result = await axios.get(apiEndpoint + "/transcript/get-transcript-file/" + applicationId);
-    return result.data;
-  } catch (error) { return handleError(error); }
-
-}
-
-
-
-async function getTerms() {
-  try {
-    const result = await axios.get(apiEndpoint + "/terms", {
-      headers: { "Authorization": "Basic dGVybXNfYXBpOmF5WV8zNjZUYTE=" }
+    const result = await axios.get(apiEndpoint + "/transcript/get-transcript-file/" + applicationId, {
+      headers: { "X-User-ID": DEBUG_USER_ID }
     });
     return result.data;
   } catch (error) { return handleError(error); }
+}
 
+async function getTerms() {
+  try {
+    
+    // const result = await axios.get( "/terms", {
+    //   headers: { "Authorization": "Basic dGVybXNfYXBpOmF5WV8zNjZUYTE=" }
+    // });
+
+    const asd = [{
+      "term_code": "202502",
+      "term_desc": "Spring 2025-2026",
+      "term_start_date": "2026-01-15",
+      "term_end_date": "2026-06-12",
+      "aid_year": "2526",
+      "academic_year": "2025",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202501",
+      "term_desc": "Fall 2025-2026",
+      "term_start_date": "2025-09-01",
+      "term_end_date": "2026-01-14",
+      "aid_year": "2526",
+      "academic_year": "2025",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202403",
+      "term_desc": "Summer 2024-2025",
+      "term_start_date": "2025-06-13",
+      "term_end_date": "2025-08-31",
+      "aid_year": "2425",
+      "academic_year": "2024",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202402",
+      "term_desc": "Spring 2024-2025",
+      "term_start_date": "2025-01-16",
+      "term_end_date": "2025-06-12",
+      "aid_year": "2425",
+      "academic_year": "2024",
+      "is_active": "1"
+      },
+      {
+      "term_code": "202401",
+      "term_desc": "Fall 2024-2025",
+      "term_start_date": "2024-09-03",
+      "term_end_date": "2025-01-15",
+      "aid_year": "2425",
+      "academic_year": "2024",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202303",
+      "term_desc": "Summer 2023-2024",
+      "term_start_date": "2024-06-13",
+      "term_end_date": "2024-09-02",
+      "aid_year": "2324",
+      "academic_year": "2023",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202302",
+      "term_desc": "Spring 2023-2024",
+      "term_start_date": "2024-01-25",
+      "term_end_date": "2024-06-12",
+      "aid_year": "2324",
+      "academic_year": "2023",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202301",
+      "term_desc": "Fall 2023-2024",
+      "term_start_date": "2023-09-05",
+      "term_end_date": "2024-01-24",
+      "aid_year": "2324",
+      "academic_year": "2023",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202203",
+      "term_desc": "Summer 2022-2023",
+      "term_start_date": "2023-06-15",
+      "term_end_date": "2023-09-04",
+      "aid_year": "2223",
+      "academic_year": "2022",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202202",
+      "term_desc": "Spring 2022-2023",
+      "term_start_date": "2023-01-26",
+      "term_end_date": "2023-06-14",
+      "aid_year": "2223",
+      "academic_year": "2022",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202201",
+      "term_desc": "Fall 2022-2023",
+      "term_start_date": "2022-09-09",
+      "term_end_date": "2023-01-25",
+      "aid_year": "2223",
+      "academic_year": "2022",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202103",
+      "term_desc": "Summer 2021-2022",
+      "term_start_date": "2022-06-29",
+      "term_end_date": "2022-09-08",
+      "aid_year": "2122",
+      "academic_year": "2021",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202102",
+      "term_desc": "Spring 2021-2022",
+      "term_start_date": "2022-01-27",
+      "term_end_date": "2022-06-28",
+      "aid_year": "2122",
+      "academic_year": "2021",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202101",
+      "term_desc": "Fall 2021-2022",
+      "term_start_date": "2021-08-27",
+      "term_end_date": "2022-01-26",
+      "aid_year": "2122",
+      "academic_year": "2021",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202003",
+      "term_desc": "Summer 2020-2021",
+      "term_start_date": "2021-06-17",
+      "term_end_date": "2021-08-26",
+      "aid_year": "2021",
+      "academic_year": "2020",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202002",
+      "term_desc": "Spring 2020-2021",
+      "term_start_date": "2021-02-05",
+      "term_end_date": "2021-06-16",
+      "aid_year": "2021",
+      "academic_year": "2020",
+      "is_active": "0"
+      },
+      {
+      "term_code": "202001",
+      "term_desc": "Fall 2020-2021",
+      "term_start_date": "2020-08-25",
+      "term_end_date": "2021-02-04",
+      "aid_year": "2021",
+      "academic_year": "2020",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201903",
+      "term_desc": "Summer 2019-2020",
+      "term_start_date": "2020-06-08",
+      "term_end_date": "2020-08-24",
+      "aid_year": "1920",
+      "academic_year": "2019",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201902",
+      "term_desc": "Spring 2019-2020",
+      "term_start_date": "2020-01-09",
+      "term_end_date": "2020-06-07",
+      "aid_year": "1920",
+      "academic_year": "2019",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201901",
+      "term_desc": "Fall 2019-2020",
+      "term_start_date": "2019-08-28",
+      "term_end_date": "2020-01-08",
+      "aid_year": "1920",
+      "academic_year": "2019",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201803",
+      "term_desc": "Summer 2018-2019",
+      "term_start_date": "2019-06-11",
+      "term_end_date": "2019-08-27",
+      "aid_year": "1819",
+      "academic_year": "2018",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201802",
+      "term_desc": "Spring 2018-2019",
+      "term_start_date": "2019-01-15",
+      "term_end_date": "2019-06-10",
+      "aid_year": "1819",
+      "academic_year": "2018",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201801",
+      "term_desc": "Fall 2018-2019",
+      "term_start_date": "2018-08-17",
+      "term_end_date": "2019-01-14",
+      "aid_year": "1819",
+      "academic_year": "2018",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201703",
+      "term_desc": "Summer 2017-2018",
+      "term_start_date": "2018-06-05",
+      "term_end_date": "2018-08-16",
+      "aid_year": "1718",
+      "academic_year": "2017",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201702",
+      "term_desc": "Spring 2017-2018",
+      "term_start_date": "2018-01-09",
+      "term_end_date": "2018-06-04",
+      "aid_year": "1718",
+      "academic_year": "2017",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201701",
+      "term_desc": "Fall 2017-2018",
+      "term_start_date": "2017-08-25",
+      "term_end_date": "2018-01-08",
+      "aid_year": "1718",
+      "academic_year": "2017",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201603",
+      "term_desc": "Summer 2016-2017",
+      "term_start_date": "2017-06-06",
+      "term_end_date": "2017-08-24",
+      "aid_year": "1617",
+      "academic_year": "2016",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201602",
+      "term_desc": "Spring 2016-2017",
+      "term_start_date": "2017-01-17",
+      "term_end_date": "2017-06-05",
+      "aid_year": "1617",
+      "academic_year": "2016",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201601",
+      "term_desc": "Fall 2016-2017",
+      "term_start_date": "2016-08-23",
+      "term_end_date": "2017-01-16",
+      "aid_year": "1617",
+      "academic_year": "2016",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201503",
+      "term_desc": "Summer 2015-2016",
+      "term_start_date": "2016-06-13",
+      "term_end_date": "2016-08-22",
+      "aid_year": "1516",
+      "academic_year": "2015",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201502",
+      "term_desc": "Spring 2015-2016",
+      "term_start_date": "2016-01-15",
+      "term_end_date": "2016-06-12",
+      "aid_year": "1516",
+      "academic_year": "2015",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201501",
+      "term_desc": "Fall 2015-2016",
+      "term_start_date": "2015-08-26",
+      "term_end_date": "2016-01-14",
+      "aid_year": "1516",
+      "academic_year": "2015",
+      "is_active": "0"
+      },
+      {
+      "term_code": "201403",
+      "term_desc": "Summer 2014-2015",
+      "term_start_date": "2015-06-15",
+      "term_end_date": "2015-08-25",
+      "aid_year": "1415",
+      "academic_year": "2014",
+      "is_active": "0"
+      }];
+
+    return asd;
+  } catch (error) { return handleError(error); }
 }
 
 async function logout(token) {
   try {
     const headers = {
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      'X-User-ID': DEBUG_USER_ID
     };
 
     const response = await axios.get(apiEndpoint + "/auth/logout", { headers });
-
 
     return response.data;
   } catch (error) {
@@ -435,19 +781,22 @@ async function postTranscript(formData) {
     const result = await axios.post(apiEndpoint + "/transcript/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        "Authorization": "Bearer " + token
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
       }
     });
     return result.data;
   } catch (error) { return handleError(error); }
-
 }
 
 async function getCurrentTranscript(studentId) {
   try {
     const token = getJwtFromCookie()
     const result = await axios.get(apiEndpoint + "/transcript/get-current-transcript/" + studentId, {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return result.data;
   } catch (error) { }
@@ -458,7 +807,10 @@ async function getStudentCourseGrades() {
     const token = getJwtFromCookie()
 
     const result = await axios.get(apiEndpoint + "/users/previous-grades", {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     });
     return result.data;
   } catch (error) { }
@@ -473,14 +825,14 @@ async function getCourseGrades(courseIds,studentId) {
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
         }
       }
     );
 
     return result.data;
   } catch (error) { }
-
 }
 
 async function updateApplicationRequestStatus(applicationRequestId, status) {
@@ -492,14 +844,14 @@ async function updateApplicationRequestStatus(applicationRequestId, status) {
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
         }
       }
     );
 
     return result.data;
   } catch (error) { handleError(error) }
-
 }
 
 async function updateApplicationRequestStatusMultiple(statusList) {
@@ -511,14 +863,14 @@ async function updateApplicationRequestStatusMultiple(statusList) {
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
         }
       }
     );
 
     return result.data;
   } catch (error) { handleError(error) }
-
 }
 
 async function getApplicationRequestById(applicationRequestId) {
@@ -526,15 +878,16 @@ async function getApplicationRequestById(applicationRequestId) {
     const token = getJwtFromCookie()
     const result = await axios.get(
       apiEndpoint + "/applicationRequest/" + applicationRequestId, {
-      headers: { "Authorization": "Bearer " + token }
+      headers: { 
+        "Authorization": "Bearer " + token,
+        "X-User-ID": DEBUG_USER_ID
+      }
     }
     );
     console.log(result.data);
     return result.data;
   } catch (error) { handleError(error) }
-
 }
-
 
 async function updateApplicationRequest(applicationRequestId, applicationId, studentId, answers) {
   try {
@@ -543,9 +896,11 @@ async function updateApplicationRequest(applicationRequestId, applicationId, stu
       apiEndpoint + "/applicationRequest/student/update/" + applicationRequestId,
       { applicationId: applicationId, answers: answers },
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
-
     );
 
     return true;
@@ -557,7 +912,6 @@ async function updateApplicationRequest(applicationRequestId, applicationId, stu
       return false
     }
   }
-
 }
 
 async function checkStudentEligibility(applicationId) {
@@ -567,7 +921,10 @@ async function checkStudentEligibility(applicationId) {
       apiEndpoint + "/applicationRequest/student/checkEligibility/" + applicationId,
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -587,6 +944,7 @@ async function finalizeStatus(appId, accMail="", rejMail=""){
         headers: { 
           "Authorization": "Bearer " + token,
           "Content-Type": "application/json",
+          "X-User-ID": DEBUG_USER_ID
          }
       }
     );
@@ -603,7 +961,10 @@ async function getNotifications() {
     const result = await axios.get(
       apiEndpoint + "/notifications",
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -622,7 +983,10 @@ async function changeNotificationStatus(requestData){
         "notificationChanges": requestData
       },
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -631,6 +995,7 @@ async function changeNotificationStatus(requestData){
     handleError(error)
   }
 }
+
 async function changeNotificationPreferences(requestData){
   try {
     const token = getJwtFromCookie()
@@ -638,7 +1003,10 @@ async function changeNotificationPreferences(requestData){
       apiEndpoint + "/notifications/preferences",
       requestData,
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -653,7 +1021,10 @@ async function getUnreadNotificationCount(token) {
     const result = await axios.get(
       apiEndpoint + "/notifications/unread",
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -670,7 +1041,10 @@ async function addFollowerToApplication(applicationId){
       apiEndpoint + "/applications/student/" + applicationId + "/followers/add",
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -687,7 +1061,10 @@ async function removeFollowerFromApplication(applicationId){
       apiEndpoint + "/applications/student/" + applicationId + "/followers/remove",
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -703,7 +1080,10 @@ async function getApplicationsByFollower(){
     const result = await axios.get(
       apiEndpoint + "/applications/byFollowers",
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -711,7 +1091,6 @@ async function getApplicationsByFollower(){
   } catch (error) {
     handleError(error)
   }
-
 }
 
 async function withdrawApplication(applicationReqId){
@@ -721,7 +1100,10 @@ async function withdrawApplication(applicationReqId){
       apiEndpoint + "/applicationRequest/withdraw/" + applicationReqId,
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -738,7 +1120,10 @@ async function updateWorkHour(applicationReqId, duration){
       apiEndpoint + "/applicationRequest/updateWorkHour/" + applicationReqId + "?duration=" + duration,
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -748,7 +1133,6 @@ async function updateWorkHour(applicationReqId, duration){
   }
 }
 
-
 async function acceptAllRequestByAppId(applicationId){
   try {
     const token = getJwtFromCookie()
@@ -756,7 +1140,10 @@ async function acceptAllRequestByAppId(applicationId){
       apiEndpoint + "/applicationRequest/" + applicationId + "/accept-all",
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -773,7 +1160,10 @@ async function rejectAllRequestByAppId(applicationId){
       apiEndpoint + "/applicationRequest/" + applicationId + "/reject-all",
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -790,7 +1180,10 @@ async function commitAppReq(appReqId){
       apiEndpoint + "/applicationRequest/" + appReqId + "/commit",
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -807,7 +1200,10 @@ async function forgivenAppReq(appReqId){
       apiEndpoint + "/applicationRequest/" + appReqId + "/uncommit",
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -824,7 +1220,10 @@ async function updateAppEmail(appId, data){
       apiEndpoint + "/applications/" + appId + "/mailUpdate",
       { acceptMail: data.acceptEmail, rejectMail: data.rejectEmail },
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -841,7 +1240,10 @@ async function resetCommitmentofAppReq(appReqId){
       apiEndpoint + "/applicationRequest/instructor/resetCommitment/" + appReqId,
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -858,7 +1260,10 @@ async function redFlagAppReq(appReqId){
       apiEndpoint + "/applicationRequest/instructor/redFlag/" + appReqId,
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -875,7 +1280,10 @@ async function unFlagAppReq(appReqId){
       apiEndpoint + "/applicationRequest/instructor/unRedFlag/" + appReqId,
       {},
       {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { 
+          "Authorization": "Bearer " + token,
+          "X-User-ID": DEBUG_USER_ID
+        }
       }
     );
 
@@ -884,7 +1292,6 @@ async function unFlagAppReq(appReqId){
     handleError(error)
   }
 }
-
 
 export {
   updateApplicationRequestStatusMultiple,
