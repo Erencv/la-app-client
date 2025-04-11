@@ -7,18 +7,18 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import theme from "./theme";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import { BrowserRouter } from "react-router-dom";
+import { Hashrouter } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <Provider store={store}>
-      <BrowserRouter basename="/build">
+      <Hashrouter basename="/build">
        
           <App />
   
-      </BrowserRouter>
+      </Hashrouter>
     </Provider>
   </ThemeProvider>
 );
