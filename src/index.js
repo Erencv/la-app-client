@@ -14,7 +14,7 @@ root.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <Provider store={store}>
-      <HashRouter basename="/ens4912">
+      <HashRouter>
        
           <App />
   
