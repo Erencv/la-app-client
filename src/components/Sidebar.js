@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout, setIsLoading, setTerm, switchIsInstructor } from "../redux/userSlice";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { getTerms, logout as invalidateToken } from "../apiCalls";
+import { getTerms } from "../apiCalls";
 import NotificationButton from "./notificationComponents/notifications";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import HandshakeIcon from '@mui/icons-material/Handshake';
@@ -152,29 +152,11 @@ function Sidebar({ setTabInitial }) {
 
 
   const handleLogout = () => {
-    dispatch(setIsLoading({ isLoading: true }));
-    token && invalidateToken(token)
-      .then(result => {
-        console.log("Logout successful");
-      })
-      .catch(error => {
-        console.error("Logout failed:", error);
-      });
-
-
-    const url = window.location.href;
-    var homePageURL = "http://pro2-dev.sabanciuniv.edu/build";
-    if (url.indexOf("pro2") === -1) {
-      homePageURL = "http://localhost:3000/build/"
-    }
-    const logoutURL = `https://login.sabanciuniv.edu/cas/logout?service=${encodeURIComponent(homePageURL)}`;
-
-
-    window.location.href = logoutURL;
-
-
-
-  }
+    dispatch(logout());
+    
+    // Redirect to the backend SAML logout endpoint
+    window.location.href = '/saml2/logout';
+  };
 
   return (
     <Box sx={{ display: "flex" }}>

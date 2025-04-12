@@ -1,18 +1,22 @@
 import axios from "axios";
 import handleError from "./errors/GlobalErrorHandler.jsx"
 
+// Configure Axios globally to include credentials with all requests
+axios.defaults.withCredentials = true;
+
 const url = window.location.href;
-//var apiEndpoint = "http://localhost:8000/api/v1";
 var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8000/api/v1";
 
-if (url.indexOf("pro2") === -1) {
+// For local development
+if (url.indexOf("localhost") !== -1) {
   apiEndpoint = "http://localhost:8000/api/v1";
-  //apiEndpoint = "https://localhost:8000/api/v1";
 }
 
-// Debug user ID - change this value to control X-User-ID header
-const DEBUG_USER_ID = "1";
+// Remove DEBUG_USER_ID
+// const DEBUG_USER_ID = "1";
 
+// Remove getJwtFromCookie
+/*
 function getJwtFromCookie() {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
@@ -26,19 +30,21 @@ function getJwtFromCookie() {
   }
   return null;
 }
+*/
 
 async function applyToPost(postId, userID, answers) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.post(
       apiEndpoint + "/applicationRequest/student" ,
       { applicationId: postId, answers: answers },
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
+        // Ensure withCredentials is set globally or per request if needed elsewhere
       }
     );
     return true;
@@ -54,11 +60,11 @@ async function applyToPost(postId, userID, answers) {
 
 async function getAnnouncement(id) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(`${apiEndpoint}/applications/${id}`, {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
 
@@ -70,11 +76,11 @@ async function getAnnouncement(id) {
 
 async function getAllAnnouncements() {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(apiEndpoint + "/applications", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return results.data;
@@ -85,11 +91,11 @@ async function getAllAnnouncements() {
 
 async function getAllInstructors() {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(apiEndpoint + "/users/instructors", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return results.data;
@@ -100,11 +106,11 @@ async function getAllInstructors() {
 
 async function getAllAnnouncementsOfInstructor() {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(apiEndpoint + "/applications/instructor", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return results.data;
@@ -115,11 +121,11 @@ async function getAllAnnouncementsOfInstructor() {
 
 async function getTranscriptInfo() {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(apiEndpoint + "/transcript/current-transcript-status", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return results.data;
@@ -130,11 +136,11 @@ async function getTranscriptInfo() {
 
 async function getAllCourses() {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(apiEndpoint + "/courses", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return results.data;
@@ -164,7 +170,7 @@ async function addAnnouncement(
   isNotTakenAllowed,
   section
 ) {
-  const token = getJwtFromCookie()
+  // const token = getJwtFromCookie() // Remove token usage
   const deadline = formatDate(lastApplicationDate) + " " + lastApplicationTime;
 
   console.log(letterGrade);
@@ -188,9 +194,9 @@ async function addAnnouncement(
       isNotTakenAllowed: isNotTakenAllowed,
       section: section?.trim()
     }, {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
 
@@ -217,7 +223,7 @@ async function updateAnnouncement(
   isNotTakenAllowed,
   section
 ) {
-  const token = getJwtFromCookie();
+  // const token = getJwtFromCookie() // Remove token usage
   const deadline = formatDate(lastApplicationDate) + " " + lastApplicationTime;
   console.log(letterGrade);
   const authInstructor_ids = auth_instructors.map(
@@ -239,9 +245,9 @@ async function updateAnnouncement(
       isNotTakenAllowed: isNotTakenAllowed,
       section: section?.trim()
     }, {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return response.data;
@@ -252,10 +258,14 @@ async function updateAnnouncement(
 
 async function getApplicationsByPost(postID) {
   try {
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(
       apiEndpoint + "/listPostApplication/" + postID,
       {
-        headers: { "X-User-ID": DEBUG_USER_ID }
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
+        }
       }
     );
     return results.data;
@@ -264,10 +274,14 @@ async function getApplicationsByPost(postID) {
 
 async function getApplicationByUsername(username) {
   try {
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(
       apiEndpoint + "/listStudentApplication/" + username,
       {
-        headers: { "X-User-ID": DEBUG_USER_ID }
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
+        }
       }
     );
     return results.data;
@@ -276,13 +290,12 @@ async function getApplicationByUsername(username) {
 
 async function getApplicationRequestsByStudentId(studentId, page) {
   try {
-    const token = getJwtFromCookie()
-    
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(
       apiEndpoint + "/applicationRequest/student/" + studentId + "?page="+ page +"&size=5", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     }
     );
@@ -292,16 +305,15 @@ async function getApplicationRequestsByStudentId(studentId, page) {
 
 async function getStudentLaHistory(studentId,applicationId, page) {
   try {
-    const token = getJwtFromCookie()
-
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.post(
       apiEndpoint + "/applicationRequest/student/la_history" + "?page="+ page +"&size=5", {
         studentId: studentId,
         applicationId : parseInt(applicationId)
       },{
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     }
     );
@@ -311,17 +323,33 @@ async function getStudentLaHistory(studentId,applicationId, page) {
 
 async function getApplicationRequestsByApplicationId(applicationId) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.get(
       apiEndpoint + "/applications/" + applicationId + "/applicationRequests", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     }
     );
     return results.data;
   } catch (error) { return handleError(error); }
+}
+
+async function getApplicationRequestById(applicationRequestId) {
+  try {
+    // const token = getJwtFromCookie() // Remove token usage
+    const result = await axios.get(
+      apiEndpoint + "/applicationRequest/" + applicationRequestId, {
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
+      }
+    }
+    );
+    console.log(result.data);
+    return result.data;
+  } catch (error) { handleError(error) }
 }
 
 async function updateApplicationById(
@@ -336,7 +364,7 @@ async function updateApplicationById(
   transcript
 ) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     var bodyFormData = new FormData();
     bodyFormData.append("student_username", username);
     bodyFormData.append("working_hours", working_hours);
@@ -352,8 +380,8 @@ async function updateApplicationById(
       bodyFormData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
     }
     );
@@ -363,12 +391,12 @@ async function updateApplicationById(
 
 async function deleteApplicationById(applicationId) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const results = await axios.delete(
       apiEndpoint + "/applications/" + applicationId, {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     }
     );
@@ -376,6 +404,8 @@ async function deleteApplicationById(applicationId) {
   } catch (error) { return handleError(error); }
 }
 
+// Remove validateLogin function
+/*
 async function validateLogin(serviceUrl, ticket) {
   try {
     // DEBUG MODE: Bypass authentication for testing
@@ -431,6 +461,7 @@ async function validateLogin(serviceUrl, ticket) {
     return handleError(error);
   }
 }
+*/
 
 function isValidURL(url) {
   try {
@@ -444,8 +475,12 @@ function isValidURL(url) {
 
 async function getTranscript(applicationId) {
   try {
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.get(apiEndpoint + "/transcript/get-transcript-file/" + applicationId, {
-      headers: { "X-User-ID": DEBUG_USER_ID }
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
+      }
     });
     return result.data;
   } catch (error) { return handleError(error); }
@@ -458,6 +493,7 @@ async function getTerms() {
     //   headers: { "Authorization": "Basic dGVybXNfYXBpOmF5WV8zNjZUYTE=" }
     // });
 
+    // Keep mock data for now if the real endpoint is not ready/needed
     const asd = [{
       "term_code": "202502",
       "term_desc": "Spring 2025-2026",
@@ -760,6 +796,8 @@ async function getTerms() {
   } catch (error) { return handleError(error); }
 }
 
+// Remove logout function (will be handled by redirect)
+/*
 async function logout(token) {
   try {
     const headers = {
@@ -774,15 +812,16 @@ async function logout(token) {
     return handleError(error);
   }
 }
+*/
 
 async function postTranscript(formData) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.post(apiEndpoint + "/transcript/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return result.data;
@@ -791,11 +830,11 @@ async function postTranscript(formData) {
 
 async function getCurrentTranscript(studentId) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.get(apiEndpoint + "/transcript/get-current-transcript/" + studentId, {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return result.data;
@@ -804,12 +843,11 @@ async function getCurrentTranscript(studentId) {
 
 async function getStudentCourseGrades() {
   try {
-    const token = getJwtFromCookie()
-
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.get(apiEndpoint + "/users/previous-grades", {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
+      headers: {
+        // "Authorization": "Bearer " + token, // Remove Authorization header
+        // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
       }
     });
     return result.data;
@@ -818,15 +856,15 @@ async function getStudentCourseGrades() {
 
 async function getCourseGrades(courseIds,studentId) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.post(
       apiEndpoint + "/transcript/course-grades/" + studentId,
       { courses: courseIds },
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -837,15 +875,15 @@ async function getCourseGrades(courseIds,studentId) {
 
 async function updateApplicationRequestStatus(applicationRequestId, status) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/" + applicationRequestId + "/status",
       { status: status },
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -856,15 +894,15 @@ async function updateApplicationRequestStatus(applicationRequestId, status) {
 
 async function updateApplicationRequestStatusMultiple(statusList) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/status",
       statusList ,
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -873,32 +911,17 @@ async function updateApplicationRequestStatusMultiple(statusList) {
   } catch (error) { handleError(error) }
 }
 
-async function getApplicationRequestById(applicationRequestId) {
-  try {
-    const token = getJwtFromCookie()
-    const result = await axios.get(
-      apiEndpoint + "/applicationRequest/" + applicationRequestId, {
-      headers: { 
-        "Authorization": "Bearer " + token,
-        "X-User-ID": DEBUG_USER_ID
-      }
-    }
-    );
-    console.log(result.data);
-    return result.data;
-  } catch (error) { handleError(error) }
-}
-
 async function updateApplicationRequest(applicationRequestId, applicationId, studentId, answers) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/student/update/" + applicationRequestId,
       { applicationId: applicationId, answers: answers },
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          "Content-Type": "application/json",
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -916,14 +939,14 @@ async function updateApplicationRequest(applicationRequestId, applicationId, stu
 
 async function checkStudentEligibility(applicationId) {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.post(
       apiEndpoint + "/applicationRequest/student/checkEligibility/" + applicationId,
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -936,15 +959,14 @@ async function checkStudentEligibility(applicationId) {
 
 async function finalizeStatus(appId, accMail="", rejMail=""){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applications/" + appId + "/finalizeStatus",
       {acceptMail: accMail, rejectMail: rejMail},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json",
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
          }
       }
     );
@@ -957,13 +979,13 @@ async function finalizeStatus(appId, accMail="", rejMail=""){
 
 async function getNotifications() {
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.get(
       apiEndpoint + "/notifications",
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -976,16 +998,16 @@ async function getNotifications() {
 
 async function changeNotificationStatus(requestData){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/notifications",
       {
         "notificationChanges": requestData
       },
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -998,14 +1020,14 @@ async function changeNotificationStatus(requestData){
 
 async function changeNotificationPreferences(requestData){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/notifications/preferences",
       requestData,
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1016,14 +1038,15 @@ async function changeNotificationPreferences(requestData){
   }
 }
 
-async function getUnreadNotificationCount(token) {
+async function getUnreadNotificationCount() { // Remove token parameter
   try {
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.get(
       apiEndpoint + "/notifications/unread",
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1036,14 +1059,14 @@ async function getUnreadNotificationCount(token) {
 
 async function addFollowerToApplication(applicationId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applications/student/" + applicationId + "/followers/add",
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1056,14 +1079,14 @@ async function addFollowerToApplication(applicationId){
 
 async function removeFollowerFromApplication(applicationId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applications/student/" + applicationId + "/followers/remove",
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1076,13 +1099,13 @@ async function removeFollowerFromApplication(applicationId){
 
 async function getApplicationsByFollower(){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.get(
       apiEndpoint + "/applications/byFollowers",
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1095,14 +1118,14 @@ async function getApplicationsByFollower(){
 
 async function withdrawApplication(applicationReqId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/withdraw/" + applicationReqId,
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1115,14 +1138,14 @@ async function withdrawApplication(applicationReqId){
 
 async function updateWorkHour(applicationReqId, duration){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/updateWorkHour/" + applicationReqId + "?duration=" + duration,
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1135,14 +1158,14 @@ async function updateWorkHour(applicationReqId, duration){
 
 async function acceptAllRequestByAppId(applicationId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/" + applicationId + "/accept-all",
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1155,14 +1178,14 @@ async function acceptAllRequestByAppId(applicationId){
 
 async function rejectAllRequestByAppId(applicationId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/" + applicationId + "/reject-all",
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1175,14 +1198,14 @@ async function rejectAllRequestByAppId(applicationId){
 
 async function commitAppReq(appReqId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/" + appReqId + "/commit",
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1195,14 +1218,14 @@ async function commitAppReq(appReqId){
 
 async function forgivenAppReq(appReqId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/" + appReqId + "/uncommit",
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1215,14 +1238,14 @@ async function forgivenAppReq(appReqId){
 
 async function updateAppEmail(appId, data){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applications/" + appId + "/mailUpdate",
       { acceptMail: data.acceptEmail, rejectMail: data.rejectEmail },
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1235,14 +1258,14 @@ async function updateAppEmail(appId, data){
 
 async function resetCommitmentofAppReq(appReqId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/instructor/resetCommitment/" + appReqId,
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1255,14 +1278,14 @@ async function resetCommitmentofAppReq(appReqId){
 
 async function redFlagAppReq(appReqId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/instructor/redFlag/" + appReqId,
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1275,14 +1298,14 @@ async function redFlagAppReq(appReqId){
 
 async function unFlagAppReq(appReqId){
   try {
-    const token = getJwtFromCookie()
+    // const token = getJwtFromCookie() // Remove token usage
     const result = await axios.put(
       apiEndpoint + "/applicationRequest/instructor/unRedFlag/" + appReqId,
       {},
       {
-        headers: { 
-          "Authorization": "Bearer " + token,
-          "X-User-ID": DEBUG_USER_ID
+        headers: {
+          // "Authorization": "Bearer " + token, // Remove Authorization header
+          // "X-User-ID": DEBUG_USER_ID // Remove X-User-ID header
         }
       }
     );
@@ -1290,6 +1313,26 @@ async function unFlagAppReq(appReqId){
     return result.data;
   } catch (error) {
     handleError(error)
+  }
+}
+
+async function getAuthenticatedUser() {
+  try {
+    // Configure Axios to send credentials (cookies)
+    axios.defaults.withCredentials = true;
+
+    const response = await axios.get(apiEndpoint + "/auth/me");
+    // Assuming the response.data contains the user object in the format expected by successLogin
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      // Not logged in
+      return null;
+    }
+    // Handle other errors (e.g., network error)
+    console.error("Error fetching authenticated user:", error);
+    handleError(error); // Use existing error handler
+    throw error; // Re-throw the error to be caught by the caller if needed
   }
 }
 
@@ -1314,18 +1357,17 @@ export {
   updateAnnouncement,
   getApplicationsByPost,
   getApplicationByUsername,
-  validateLogin,
+  getApplicationRequestsByStudentId,
+  getStudentLaHistory,
+  getApplicationRequestsByApplicationId,
+  getApplicationRequestById,
+  deleteApplicationById,
+  isValidURL,
   getTranscript,
   getTerms,
-  logout,
-  getApplicationRequestsByStudentId,
-  getAllAnnouncementsOfInstructor,
   postTranscript,
-  getApplicationRequestsByApplicationId,
   getCurrentTranscript,
-  deleteApplicationById,
   getStudentCourseGrades,
-  getApplicationRequestById,
   updateApplicationRequest,
   finalizeStatus,
   getTranscriptInfo,
@@ -1333,12 +1375,13 @@ export {
   removeFollowerFromApplication,
   getApplicationsByFollower,
   withdrawApplication,
+  updateWorkHour,
   commitAppReq,
   forgivenAppReq,
-  getStudentLaHistory,
   updateAppEmail,
   resetCommitmentofAppReq,
-  updateWorkHour,
   redFlagAppReq,
-  unFlagAppReq
+  unFlagAppReq,
+  getAuthenticatedUser,
+  getAllAnnouncementsOfInstructor
 };

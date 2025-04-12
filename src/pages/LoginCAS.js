@@ -1,50 +1,22 @@
-import { Typography } from '@mui/material'
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { startLoginProcess, successLogin } from "./../redux/userSlice";
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import LoadingPage from './LoadingPage/LoadingPage';
 
 function LoginCAS() {
-    const url = window.location.href;
-    console.log("URL is:" + url);
-    const encodedURL = encodeURIComponent(url);
-    // const casLoginBaseURL = "https://login.sabanciuniv.edu/cas/login?service=";
-    // const casLoginURL = casLoginBaseURL + encodedURL;
-    const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
     const isLoading = useSelector((state) => state.user.isLoading);
-    let error_text = "";
-    const dispatch = useDispatch();
 
     useEffect(() => {
-      if (!isLoggedIn && !isLoading) {
-        // Debug: bypass CAS login by directly dispatching a successful login.
-        dispatch(successLogin({
-          token: "debug_token_for_testing_only",
-          username: "debug@example.com",
-          name: "Debug",
-          surname: "User",
-          id: "1",
-          isInstructor: true,  // Set to false for student role
-          notificationPreference: null,
-          photoUrl: "",
-          universityId: ""
-        }));
-        console.log("CAS login bypassed for debugging.");
-        
-        // Original CAS redirect code is commented out:
-        // if (url.indexOf("?ticket=") !== -1 || url.indexOf("&ticket=") !== -1) {
-        //   error_text = "error";
-        // } else {
-        //   dispatch(startLoginProcess());
-        //   window.location.replace(casLoginURL);
-        // }
-      }
-    }, [dispatch, isLoggedIn, isLoading])
+        // Redirect to the backend SAML login endpoint
+        window.location.replace('/saml2/login');
+    }, []);
 
-    return (
-      <>
-        <Typography>{error_text}</Typography>
-      </>
-    )
+    // Optionally, show a loading indicator while redirecting
+    if (isLoading) {
+        return <LoadingPage />;
+    }
+
+    // Or just return a minimal component while the redirect happens
+    return <div>Redirecting to login...</div>;
 }
 
-export default LoginCAS
+export default LoginCAS;

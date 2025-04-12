@@ -1,5 +1,4 @@
 import "./App.css";
-import MockCAS from "./pages/MockCAS";
 import { Routes, Route, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import CreateAnnouncement from "./pages/CreateAnnouncement";
@@ -9,8 +8,8 @@ import ApplicantsPage from "./pages/ApplicantsPage";
 import { useDispatch, useSelector } from "react-redux";
 import LoginCAS from "./pages/LoginCAS";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { startLoginProcess, successLogin, logout, failLogin, setUnreadNotificationCount, increaseUnreadNotificationCountByOne, setStompClient, setPublicSubscription } from "./redux/userSlice";
-import { getUnreadNotificationCount, validateLogin } from "./apiCalls";
+import { startLoginProcess, successLogin, logout as logoutAction, failLogin, setUnreadNotificationCount, increaseUnreadNotificationCountByOne, setStompClient, setPublicSubscription } from "./redux/userSlice";
+import { getUnreadNotificationCount, getAuthenticatedUser, validateLogin } from "./apiCalls";
 import CourseApplicantsPage from "./pages/CourseApplicantsPage";
 import EditApplyPage from "./pages/EditApplyPage";
 import SuccessPage from "./pages/SuccessPage";
@@ -67,77 +66,50 @@ function App() {
 
   const [paused, setPaused] = useState(false);
 
-
   useEffect(() => {
-    var stompClient = null;
-
-    const handleLogin = (baseUrl, ticket) => {
-      validateLogin(baseUrl, ticket)
-        .then((result) => {
-          dispatch(
-            successLogin({
-              id: result.user.id,
-              jwtToken: result.token,
-              username: result.user.email,
-              name: result.user.name,
-              surname: result.user.surname,
-              isInstructor: result.user.role === "INSTRUCTOR",
-              notificationPreference: result.user.notificationPreference,
-              photoUrl: result.user.photoUrl,
-              universityId: result.user.universityId
-            })
-          );
-
-          var authToken = result.token;
-          getUnreadNotificationCount(authToken)
-            .then((r) => {
-              dispatch(
-                setUnreadNotificationCount({ unreadNotifications: r.count })
-              )
-            })
-
-
-          webSocketService.connectWebSocket(authToken)
-
-          const handleNotification = (notification) => {
-            dispatch(increaseUnreadNotificationCountByOne());
-            handleInfo(notification.description, dispatch);
-          };
-          const topic = `/user/${result.user.id}/notifications`;
-
-          console.log('calling subscribe: ' + topic)
-          webSocketService.subscribe(topic, handleNotification);
-
-
-
-
-          urlParams.delete("ticket");
-          const newPath = location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
-          navigate(newPath, { replace: true });
-        })
-        .catch(error => {
-          console.error('Login error:', error);
-        });
-    };
-
-
-
-    if (!isLoggedIn && !isLoading && url.includes("?ticket=")) {
-      const ticket = urlParams.get("ticket");
-      const baseUrl = url.split("?")[0];
-      dispatch(startLoginProcess());
-
-      handleLogin(baseUrl, ticket);
-    }
-
-    return () => {
-      if (stompClient !== null) {
-        stompClient.disconnect();
-        dispatch(setStompClient({ stompClient: null }));
+    const checkAuthStatus = async () => {
+      if (!isLoggedIn) {
+        dispatch(startLoginProcess());
+        try {
+          const userData = await getAuthenticatedUser();
+          if (userData) {
+            dispatch(
+              successLogin({
+                id: userData.user.id,
+                username: userData.user.email,
+                name: userData.user.name,
+                surname: userData.user.surname,
+                isInstructor: userData.user.role === "INSTRUCTOR",
+                notificationPreference: userData.user.notificationPreference,
+                photoUrl: userData.user.photoUrl,
+                universityId: userData.user.universityId
+              })
+            );
+            getUnreadNotificationCount()
+              .then((r) => {
+                dispatch(
+                  setUnreadNotificationCount({ unreadNotifications: r.count })
+                )
+              })
+            webSocketService.connectWebSocket();
+            const handleNotification = (notification) => {
+              dispatch(increaseUnreadNotificationCountByOne());
+              handleInfo(notification.description, dispatch);
+            };
+            const topic = `/user/${userData.user.id}/notifications`;
+            webSocketService.subscribe(topic, handleNotification);
+          } else {
+            dispatch(failLogin());
+          }
+        } catch (error) {
+          dispatch(failLogin());
+          handleServerDownError(error, dispatch);
+        }
       }
     };
-  }, [isLoggedIn, isLoading, url, dispatch, navigate, location.pathname, urlParams]);
 
+    checkAuthStatus();
+  }, [dispatch, isLoggedIn]);
 
   const ProtectedRouteIns = ({ element }) => {
     if (isInstructor) {
@@ -174,7 +146,7 @@ function App() {
               <>
                 {/* not authorized */}
                 <Route path="/home" element={<HomePage />} />
-                <Route path="*" element={<MockCAS />} />
+                <Route path="*" element={<HomePage />} />
                 <Route path="/success" element={<SuccessPage />} />
                 <Route path="/profile/:id" element={<ProfilePage />} />
                 <Route path="/403" element={<Forbidden403></Forbidden403>} />
@@ -202,7 +174,7 @@ function App() {
               </>
             ) : (
               <>
-                <Route exact path="/" element={<MockCAS></MockCAS>}></Route>
+                <Route exact path="/" element={<LoginCAS></LoginCAS>}></Route>
                 <Route path="*" element={<LoginCAS></LoginCAS>}></Route>
                 <Route path="/403" element={<Forbidden403></Forbidden403>} />
               </>
