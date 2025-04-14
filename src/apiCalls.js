@@ -3,15 +3,17 @@ import handleError from "./errors/GlobalErrorHandler.jsx"
 
 const url = window.location.href;
 //var apiEndpoint = "http://localhost:8000/api/v1";
+const DEBUG_USER_ID = "1234561"; // Consistent user ID for debugging
 var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8000/api/v1";
+
+// Override for local development - comment out for production deployment
+// apiEndpoint = "http://localhost:8000/api/v1";
+//apiEndpoint = "https://localhost:8000/api/v1";
 
 if (url.indexOf("pro2") === -1) {
   apiEndpoint = "http://localhost:8000/api/v1";
   //apiEndpoint = "https://localhost:8000/api/v1";
 }
-
-// Debug user ID - change this value to control X-User-ID header
-const DEBUG_USER_ID = "1";
 
 function getJwtFromCookie() {
   const cookies = document.cookie.split(';');
@@ -382,7 +384,7 @@ async function validateLogin(serviceUrl, ticket) {
     const debugMode = true; // Set to true to bypass authentication
     
     if (debugMode) {
-      console.log("DEBUG MODE: Bypassing authentication");
+      console.log("DEBUG MODE: Bypassing authentication - STUDENT VERSION");
       // Create a mock JWT token with 1 day expiry
       const mockToken = "debug_token_for_testing_only";
       const expiryDays = 1;
@@ -391,16 +393,16 @@ async function validateLogin(serviceUrl, ticket) {
       const expires = "expires=" + now.toUTCString();
       document.cookie = "jwt=" + mockToken + ";" + expires + ";path=/";
       
-      // Return mock data - Change role here to switch between "STUDENT" and "INSTRUCTOR"
+      // Return mock data - STUDENT ROLE FIXED
       return {
         token: mockToken,
         user: {
           id: DEBUG_USER_ID, // Use the same ID as X-User-ID header
-          username: "eren",
-          email: "debug@example.com",
-          role: "STUDENT", // Change to "INSTRUCTOR" for instructor role
-          name: "Debug User",
-          surname: "Test"
+          username: "student_user",
+          email: "student@example.com",
+          role: "STUDENT", // Fixed to STUDENT for this deployment
+          name: "Student",
+          surname: "User"
         }
       };
     }

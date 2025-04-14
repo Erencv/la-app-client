@@ -163,9 +163,9 @@ function Sidebar({ setTabInitial }) {
 
 
     const url = window.location.href;
-    var homePageURL = "http://pro2-dev.sabanciuniv.edu/build";
+    var homePageURL = "http://pro2-dev.sabanciuniv.edu/ens4912/student/";
     if (url.indexOf("pro2") === -1) {
-      homePageURL = "http://localhost:3000/build/"
+      homePageURL = "http://localhost:3000/ens4912/student/"
     }
     const logoutURL = `https://login.sabanciuniv.edu/cas/logout?service=${encodeURIComponent(homePageURL)}`;
 
