@@ -6,6 +6,7 @@ import subg from "../assets/subg.jpg";
 import sula from "../assets/sula.png";
 import sulogo from "../assets/sulogo.png";
 import {useMediaQuery} from 'react-responsive';
+import { basePath } from '../constants/apiEndpoint';
 
 function MockCAS() {
   const [isLeaving, setIsLeaving] = useState(false);
@@ -103,8 +104,10 @@ function MockCAS() {
   const handleLoginClick = () => {
     setIsLeaving(true);
     setTimeout(() => {
-      navigate("/home");
-    }, 500); 
+      const serviceUrl = `${window.location.origin}${basePath}#/cas-callback`;
+      const casLoginURL = `https://login.sabanciuniv.edu/cas/login?service=${encodeURIComponent(serviceUrl)}`;
+      window.location.href = casLoginURL;
+    }, 500);
   };
 
   return (

@@ -35,6 +35,7 @@ import webSocketService from "./components/service/WebSocketService";
 import LoadingPage from "./pages/LoadingPage/LoadingPage";
 import Forbidden403 from "./403";
 import MailingPage from "./components/applicantsTableComponents/MailingPage";
+import CASCallback from "./components/CASCallback";
 
 
 
@@ -74,6 +75,11 @@ function App() {
     const handleLogin = (baseUrl, ticket) => {
       validateLogin(baseUrl, ticket)
         .then((result) => {
+          // Check if user profile is complete
+          const isProfileComplete = result.user.name && 
+                                   result.user.surname && 
+                                   result.user.universityId;
+          
           dispatch(
             successLogin({
               id: result.user.id,
@@ -88,16 +94,17 @@ function App() {
             })
           );
 
-          var authToken = result.token;
+          // Get unread notifications count
+          const authToken = result.token;
           getUnreadNotificationCount(authToken)
             .then((r) => {
               dispatch(
                 setUnreadNotificationCount({ unreadNotifications: r.count })
               )
-            })
+            });
 
-
-          webSocketService.connectWebSocket(authToken)
+          // Connect to WebSocket
+          webSocketService.connectWebSocket(authToken);
 
           const handleNotification = (notification) => {
             dispatch(increaseUnreadNotificationCountByOne());
@@ -105,18 +112,22 @@ function App() {
           };
           const topic = `/user/${result.user.id}/notifications`;
 
-          console.log('calling subscribe: ' + topic)
+          console.log('calling subscribe: ' + topic);
           webSocketService.subscribe(topic, handleNotification);
 
-
-
-
+          // Clear ticket from URL
           urlParams.delete("ticket");
           const newPath = location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
           navigate(newPath, { replace: true });
+
+          // Redirect to profile completion if necessary
+          if (!isProfileComplete) {
+            navigate('/profile/' + result.user.id);
+          }
         })
         .catch(error => {
           console.error('Login error:', error);
+          dispatch(failLogin());
         });
     };
 
@@ -137,6 +148,91 @@ function App() {
       }
     };
   }, [isLoggedIn, isLoading, url, dispatch, navigate, location.pathname, urlParams]);
+
+  // Add this effect to handle hash router redirects from 404.html
+  useEffect(() => {
+    // Check if we have a hash with path and query
+    if (window.location.hash && window.location.hash.startsWith('#/')) {
+      const hash = window.location.hash.substring(2); // Remove "#/"
+      
+      // Check if there's a path with query parameters
+      const queryIndex = hash.indexOf('?');
+      if (queryIndex !== -1) {
+        const path = hash.substring(0, queryIndex);
+        const query = hash.substring(queryIndex);
+        
+        // Check for CAS ticket in the query
+        const ticketMatch = query.match(/[?&]ticket=([^&]*)/);
+        if (path === 'cas-callback' && ticketMatch) {
+          const ticket = ticketMatch[1];
+          const serviceUrl = `${window.location.origin}/ens4912/cas-callback`;
+          
+          // Start login process
+          dispatch(startLoginProcess());
+          
+          // Validate the ticket with backend
+          validateLogin(serviceUrl, ticket)
+            .then((result) => {
+              // Handle successful login (similar code as in handleLogin)
+              // Check if user profile is complete
+              const isProfileComplete = result.user.name && 
+                                       result.user.surname && 
+                                       result.user.universityId;
+              
+              dispatch(
+                successLogin({
+                  id: result.user.id,
+                  jwtToken: result.token,
+                  username: result.user.email,
+                  name: result.user.name,
+                  surname: result.user.surname,
+                  isInstructor: result.user.role === "INSTRUCTOR",
+                  notificationPreference: result.user.notificationPreference,
+                  photoUrl: result.user.photoUrl,
+                  universityId: result.user.universityId
+                })
+              );
+
+              // Get unread notifications count
+              const authToken = result.token;
+              getUnreadNotificationCount(authToken)
+                .then((r) => {
+                  dispatch(
+                    setUnreadNotificationCount({ unreadNotifications: r.count })
+                  )
+                });
+
+              // Connect to WebSocket
+              webSocketService.connectWebSocket(authToken);
+
+              const handleNotification = (notification) => {
+                dispatch(increaseUnreadNotificationCountByOne());
+                handleInfo(notification.description, dispatch);
+              };
+              const topic = `/user/${result.user.id}/notifications`;
+
+              console.log('calling subscribe: ' + topic);
+              webSocketService.subscribe(topic, handleNotification);
+              
+              // Navigate to home or profile completion
+              if (!isProfileComplete) {
+                navigate('/profile/' + result.user.id, { replace: true });
+              } else {
+                navigate('/home', { replace: true });
+              }
+            })
+            .catch(error => {
+              console.error('Login error:', error);
+              dispatch(failLogin());
+              navigate('/', { replace: true });
+            });
+        }
+      }
+      
+      // Clean up the URL by removing the hash
+      window.history.replaceState(null, null, '/ens4912/');
+    }
+  }, [dispatch, navigate]);
 
 
   const ProtectedRouteIns = ({ element }) => {
@@ -203,6 +299,7 @@ function App() {
             ) : (
               <>
                 <Route exact path="/" element={<MockCAS></MockCAS>}></Route>
+                <Route path="/cas-callback" element={<CASCallback />} />
                 <Route path="*" element={<LoginCAS></LoginCAS>}></Route>
                 <Route path="/403" element={<Forbidden403></Forbidden403>} />
               </>

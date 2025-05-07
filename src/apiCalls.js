@@ -5,13 +5,17 @@ const url = window.location.href;
 //var apiEndpoint = "http://localhost:8000/api/v1";
 var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8000/api/v1";
 
+// Debug user ID - consistent value for debugging
+const DEBUG_USER_ID = "1234562"; 
+
+// Override for local development - comment out for production deployment
+// apiEndpoint = "http://localhost:8000/api/v1";
+//apiEndpoint = "https://localhost:8000/api/v1";
+
 if (url.indexOf("pro2") === -1) {
   apiEndpoint = "http://localhost:8000/api/v1";
   //apiEndpoint = "https://localhost:8000/api/v1";
 }
-
-// Debug user ID - change this value to control X-User-ID header
-const DEBUG_USER_ID = "1";
 
 function getJwtFromCookie() {
   const cookies = document.cookie.split(';');
@@ -378,48 +382,23 @@ async function deleteApplicationById(applicationId) {
 
 async function validateLogin(serviceUrl, ticket) {
   try {
-    // DEBUG MODE: Bypass authentication for testing
-    const debugMode = true; // Set to true to bypass authentication
-    
-    if (debugMode) {
-      console.log("DEBUG MODE: Bypassing authentication");
-      // Create a mock JWT token with 1 day expiry
-      const mockToken = "debug_token_for_testing_only";
-      const expiryDays = 1;
-      const now = new Date();
-      now.setTime(now.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
-      const expires = "expires=" + now.toUTCString();
-      document.cookie = "jwt=" + mockToken + ";" + expires + ";path=/";
-      
-      // Return mock data - Change role here to switch between "STUDENT" and "INSTRUCTOR"
-      return {
-        token: mockToken,
-        user: {
-          id: DEBUG_USER_ID, // Use the same ID as X-User-ID header
-          username: "eren",
-          email: "debug@example.com",
-          role: "STUDENT", // Change to "INSTRUCTOR" for instructor role
-          name: "Debug User",
-          surname: "Test"
-        }
-      };
-    }
-    
-    // Normal authentication flow
     const isValidUrl = isValidURL(serviceUrl);
     if (!isValidUrl) {
       throw new Error("The service URL is not valid.");
     }
 
-    const result = await axios.post(apiEndpoint + "/auth/authentication", {
+    const result = await axios.post(apiEndpoint + "/direct-cas-auth", {
       serviceUrl: serviceUrl,
       ticket: ticket,
-    }, {
-      headers: { "X-User-ID": DEBUG_USER_ID }
     });
 
     console.log(result.data);
     
+    // Store JWT token in localStorage for authenticated requests
+    localStorage.setItem('authToken', result.data.token);
+    localStorage.setItem('user', JSON.stringify(result.data.user));
+    
+    // Also set in cookie for compatibility with existing code
     const expiryDays = 1;
     const now = new Date();
     now.setTime(now.getTime() + (expiryDays * 24 * 60 * 60 * 1000));

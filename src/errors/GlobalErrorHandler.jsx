@@ -4,35 +4,27 @@ import { toast } from 'react-toastify';
 import { logout } from "../apiCalls";
 
 export default function handleError(error) {
- 
-  if (error.response.status === 401) {
+  // Handle authentication errors (401 Unauthorized)
+  if (error.response && error.response.status === 401) {
+    // Clear stored tokens
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     
-    const url = window.location.href;
-    toast.error("Please login again.", {
+    toast.error("Your session has expired. Please log in again.", {
       containerId: "1618",
       closeOnClick: true,
     });
-    if (url.indexOf("pro2") === -1) {
-      window.location.replace("http://localhost:3000/build/");
-    }else{
-      window.location.replace("http:pro2-dev.sabanciuniv.edu/build/");
-      toast.error("Please login again.", {
-        containerId: "1618",
-        closeOnClick: true,
-      });
-    }
-    //console.log(window.location.toString());
-    //window.location.replace("*");
-    // const url = window.location.href;
-    // console.log("URL is:" + url);
-    // const encodedURL = encodeURIComponent(url);
-    // const casLoginBaseURL = "https://login.sabanciuniv.edu/cas/login?service=";
-    // const casLoginURL = casLoginBaseURL + encodedURL;
-    // window.location.replace(casLoginURL);
+    
+    // Redirect to login
+    const baseUrl = window.location.origin;
+    window.location.replace(baseUrl);
+    return;
   }
+  
+  // Handle other response errors
   if (error.response) {
-    //console.log(error.response);
-    toast.error(`Error: ${error.response.status} - ${error.response.data.message ?? error.response.data.detail}`, {
+    toast.error(`Error: ${error.response.status} - ${error.response.data.message ?? error.response.data.error ?? error.response.data.detail}`, {
       containerId: "1618",
       closeOnClick: true,
     });

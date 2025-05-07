@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // Preserve the full URL including the ticket parameter when redirecting
+    (function() {
+      // Extract the path and query parameters from the current URL
+      var path = window.location.pathname;
+      var query = window.location.search;
+      
+      // Base path of the application
+      var basePath = '/ens4912/';
+      
+      // Ensure path starts with basePath, and remove it for processing
+      if (path.indexOf(basePath) === 0) {
+        path = path.substr(basePath.length);
+      }
+      
+      // Redirect to the main app with the path and query encoded in the URL
+      var redirectUrl = basePath + '#/' + path + query;
+      window.location.replace(redirectUrl);
+    })();
+  </script>
+</head>
+<body>
+  <h1>Redirecting...</h1>
+  <p>If you are not redirected automatically, click <a id="redirect-link" href="/ens4912/">here</a>.</p>
+  <script>
+    // Update the fallback link
+    document.getElementById('redirect-link').href = window.location.pathname + window.location.search;
+  </script>
+</body>
+</html> 
