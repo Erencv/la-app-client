@@ -19,9 +19,14 @@ class WebSocketService {
         const socket = new SockJS(`${apiEndpoint}/ws`);
         this.stompClient = Stomp.over(socket);
         
-        // Configure connection with auth token
+        // Configure connection with auth token and credentials
+        const headers = {
+            'Authorization': `Bearer ${authToken}`,
+            // The withCredentials is handled by SockJS automatically
+        };
+        
         this.stompClient.connect(
-            { 'Authorization': `Bearer ${authToken}` },
+            headers,
             () => {
                 console.log('WebSocket connected');
             },
@@ -29,8 +34,6 @@ class WebSocketService {
                 console.error('WebSocket connection error:', error);
             }
         );
-        
-        return this.stompClient;
     }
 
     subscribe(topic, callback) {
@@ -43,7 +46,7 @@ class WebSocketService {
         const subscription = this.stompClient.subscribe(topic, (message) => {
             const parsedBody = JSON.parse(message.body);
             callback(parsedBody);
-        });
+            });
 
         // Store subscription for later cleanup
         this.subscriptions.set(topic, subscription);

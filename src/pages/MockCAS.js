@@ -107,7 +107,7 @@ function MockCAS() {
       const serviceUrl = `${window.location.origin}${basePath}#/cas-callback`;
       const casLoginURL = `https://login.sabanciuniv.edu/cas/login?service=${encodeURIComponent(serviceUrl)}`;
       window.location.href = casLoginURL;
-    }, 500);
+    }, 500); 
   };
 
   return (

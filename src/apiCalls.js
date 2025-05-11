@@ -1,9 +1,41 @@
 import axios from "axios";
 import handleError from "./errors/GlobalErrorHandler.jsx"
+import { apiEndpoint } from "./constants/apiEndpoint";
 
-const url = window.location.href;
-//var apiEndpoint = "http://localhost:8000/api/v1";
-var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8000/api/v1";
+// At the top of the file, add this line to ensure all axios requests include credentials
+axios.defaults.withCredentials = true;
+
+// Add these interceptors to debug request/response headers
+axios.interceptors.request.use(
+  config => {
+    console.log(`Request to ${config.url}:`, config.headers);
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+
+axios.interceptors.response.use(
+  response => {
+    console.log(`Response from ${response.config.url}:`, response.headers);
+    return response;
+  },
+  error => {
+    console.error('Response error:', error.message);
+    if (error.response) {
+      console.log('Error response headers:', error.response.headers);
+      console.log('Error status:', error.response.status);
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Fix direct references to the API endpoint
+// const url = window.location.href;
+// var apiEndpoint = "http://pro2-dev.sabanciuniv.edu:8000/api/v1";
+
+// Use the imported apiEndpoint from constants/apiEndpoint.js
 
 // Debug user ID - consistent value for debugging
 const DEBUG_USER_ID = "1234562"; 
@@ -12,7 +44,7 @@ const DEBUG_USER_ID = "1234562";
 // apiEndpoint = "http://localhost:8000/api/v1";
 //apiEndpoint = "https://localhost:8000/api/v1";
 
-if (url.indexOf("pro2") === -1) {
+if (apiEndpoint.indexOf("pro2") === -1) {
   apiEndpoint = "http://localhost:8000/api/v1";
   //apiEndpoint = "https://localhost:8000/api/v1";
 }
@@ -390,6 +422,8 @@ async function validateLogin(serviceUrl, ticket) {
     const result = await axios.post(apiEndpoint + "/direct-cas-auth", {
       serviceUrl: serviceUrl,
       ticket: ticket,
+    }, {
+      withCredentials: true,
     });
 
     console.log(result.data);
@@ -398,16 +432,12 @@ async function validateLogin(serviceUrl, ticket) {
     localStorage.setItem('authToken', result.data.token);
     localStorage.setItem('user', JSON.stringify(result.data.user));
     
-    // Also set in cookie for compatibility with existing code
-    const expiryDays = 1;
-    const now = new Date();
-    now.setTime(now.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
-    const expires = "expires=" + now.toUTCString();
-    document.cookie = "jwt=" + result.data.token + ";" + expires + ";path=/";
-
+    // Cookie handling is now managed by the server with withCredentials: true
+    
     return result.data;
   } catch (error) {
-    return handleError(error);
+    console.error(error);
+    return { error: error.message };
   }
 }
 
